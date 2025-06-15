@@ -1,4 +1,4 @@
-from google import genai
+import google.generativeai as genai
 from static_analysis.python_analyzer import run_pylint
 
 def analyze_with_ai(file_path, pylint_results):
@@ -6,11 +6,11 @@ def analyze_with_ai(file_path, pylint_results):
     if not pylint_results:
         return "Kod analizi sonucunda herhangi bir sorun tespit edilmedi."
 
-    # Dosya içeriğini al
+    # Dosya içeriğinin alınması
     with open(file_path, 'r', encoding='utf-8') as file:
         file_content = file.read()
 
-    # Sorunları kategorilere ayır
+    # Sorunları kategorilere ayırılması
     issues_by_category = {}
     for issue in pylint_results:
         category = issue['type']
@@ -18,7 +18,7 @@ def analyze_with_ai(file_path, pylint_results):
             issues_by_category[category] = []
         issues_by_category[category].append(issue)
 
-    # AI için prompt hazırla
+    # AI için prompt hazırlanması
     prompt = f"""Aşağıdaki Python kodunu ve tespit edilen sorunları analiz et:
 
 ```python
@@ -36,22 +36,14 @@ Tespit edilen sorunlar:
 - Sorunu nasıl düzeltebileceğini öner
 - Bu tür sorunlardan kaçınmak için en iyi uygulamaları öner
 """
-    # OpenAI API'sini kullan
-    client = genai.Client(api_key="AIzaSyBVgsYjm3nuQjZlWwL51wGVEVg454PAfyM")
-    response = client.models.generate_content(
-        model="gemini-2.0-flash", contents=prompt
-    )
+    # OpenAI API'ının çağırılması
+    genai.configure(api_key="AIzaSyBVgsYjm3nuQjZlWwL51wGVEVg454PAfyM")
+    model = genai.GenerativeModel('gemini-2.0-flash')
+    response = model.generate_content(prompt)
     return response.text
 
-
-pylint_results = run_pylint('ornek.py')
-ai_results = analyze_with_ai("ornek.py", pylint_results)
+# Terminalde test
+pylint_results = run_pylint('testing_file.py')
+ai_results = analyze_with_ai("testing_file.py", pylint_results)
 print("AI Analiz Sonuçları:")
 print(ai_results)
-
-# client = genai.Client(api_key="AIzaSyBVgsYjm3nuQjZlWwL51wGVEVg454PAfyM")
-
-# response = client.models.generate_content(
-#     model="gemini-2.0-flash", contents="Explain how AI works in a few words"
-# )
-# print(response.text)
