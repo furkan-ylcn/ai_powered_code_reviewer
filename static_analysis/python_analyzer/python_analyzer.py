@@ -15,7 +15,7 @@ def run_pylint(file_path):
     return output
 
 # Test
-# pylint_results = run_pylint('ornek.py')
+# pylint_results = run_pylint('./static_analysis/python_analyzer/testing_file.py')
 # print(pylint_results)
 # for i in range(len(pylint_results)):
 #     print("Line" , pylint_results[i]['line'] , "(" , pylint_results[i]['type'] , "): " , pylint_results[i]['message'])

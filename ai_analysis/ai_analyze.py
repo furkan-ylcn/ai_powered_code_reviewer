@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from static_analysis.python_analyzer import run_pylint
+from static_analysis.python_analyzer.python_analyzer import run_pylint
 
 def analyze_with_ai(file_path, pylint_results):
     """Pylint sonuçlarını ve kod içeriğini kullanarak AI analizi yapar."""
@@ -43,7 +43,7 @@ Tespit edilen sorunlar:
     return response.text
 
 # Terminalde test
-pylint_results = run_pylint('testing_file.py')
-ai_results = analyze_with_ai("testing_file.py", pylint_results)
+pylint_results = run_pylint('./static_analysis/python_analyzer/testing_file.py')
+ai_results = analyze_with_ai("./static_analysis/python_analyzer/testing_file.py", pylint_results)
 print("AI Analiz Sonuçları:")
 print(ai_results)
