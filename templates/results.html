@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - AI-Powered Code Reviewer{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Analysis Results
+                </h2>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Analyze Another File
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-code fa-2x text-info mb-2"></i>
+                    <h5 class="card-title">Language</h5>
+                    <p class="card-text text-capitalize">{{ results.language }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-bug fa-2x {{ 'text-danger' if results.total_issues > 0 else 'text-success' }} mb-2"></i>
+                    <h5 class="card-title">Total Issues</h5>
+                    <p class="card-text">{{ results.total_issues }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-lines-leaning fa-2x text-secondary mb-2"></i>
+                    <h5 class="card-title">Lines of Code</h5>
+                    <p class="card-text">{{ results.code_content.split('\n')|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-robot fa-2x text-primary mb-2"></i>
+                    <h5 class="card-title">AI Analysis</h5>
+                    <p class="card-text">
+                        <span class="badge bg-success">Completed</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Original Code -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-code me-2"></i>Original Code
+                        <button class="btn btn-sm btn-outline-secondary float-end" onclick="toggleCode()">
+                            <i class="fas fa-eye me-1"></i>Toggle View
+                        </button>
+                    </h5>
+                </div>
+                <div class="card-body p-0" id="codeContainer">
+                    <pre class="mb-0 p-3" style="background-color: #f8f9fa; max-height: 400px; overflow-y: auto;"><code class="language-{{ results.language }}">{{ results.code_content }}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Static Analiz Sonuçları -->
+    {% if results.static_analysis %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Static Analysis Issues ({{ results.total_issues }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set categories = {} %}
+                    {% for issue in results.static_analysis %}
+                        {% if categories.update({issue.category: categories.get(issue.category, []) + [issue]}) %}{% endif %}
+                    {% endfor %}
+                    
+                    {% for category, issues in categories.items() %}
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2">
+                            <i class="fas fa-folder me-2"></i>{{ category }} ({{ issues|length }})
+                        </h6>
+                        <div class="row">
+                            {% for issue in issues %}
+                            <div class="col-12 mb-2">
+                                <div class="alert alert-{{ 'danger' if issue.severity == 'high' else 'warning' if issue.severity == 'medium' else 'info' }} py-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>Line {{ issue.line }}{% if issue.column %}, Column {{ issue.column }}{% endif %}:</strong>
+                                            {{ issue.message }}
+                                            {% if issue.symbol %}
+                                            <br><small class="text-muted">Rule: {{ issue.symbol }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-{{ 'danger' if issue.severity == 'high' else 'warning' if issue.severity == 'medium' else 'info' }}">
+                                            {{ issue.severity|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- AI Analiz Sonuçları -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-robot me-2"></i>
+                        AI Analysis & Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if results.ai_analysis %}
+                    <div class="ai-analysis-content">
+                        {{ results.ai_analysis|safe }}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
+                        <p>AI analysis not available. Please check your configuration.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-plus me-2"></i>Analyze New Code
+            </a>
+            <button class="btn btn-outline-secondary btn-lg" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Print Results
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // AI analiz sonuçlarının formatlanması
+    
+    // syntax highlighting
+    if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+    }
+});
+
+function toggleCode() {
+    const container = document.getElementById('codeContainer');
+    const pre = container.querySelector('pre');
+    
+    if (pre.style.maxHeight === 'none' || !pre.style.maxHeight) {
+        pre.style.maxHeight = '400px';
+        pre.style.overflowY = 'auto';
+    } else {
+        pre.style.maxHeight = 'none';
+        pre.style.overflowY = 'visible';
+    }
+}
+
+function formatAIAnalysis() {
+    const content = document.querySelector('.ai-analysis-content');
+    if (!content) return;
+    
+    let html = content.innerHTML;
+    
+    html = html.replace(/^## (.*$)/gim, '<h4 class="mt-4 mb-3 text-primary"><i class="fas fa-chevron-right me-2"></i>$1</h4>');
+    html = html.replace(/^### (.*$)/gim, '<h5 class="mt-3 mb-2 text-secondary">$1</h5>');
+    
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    html = html.replace(/^- (.*$)/gim, '<li class="mb-1">$1</li>');
+    
+    html = html.replace(/(<li.*?<\/li>\s*)+/g, '<ul class="mb-3">$&</ul>');
+    
+    html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-light p-3 rounded"><code class="language-$1">$2</code></pre>');
+    
+    html = html.replace(/`([^`]+)`/g, '<code class="bg-light px-2 py-1 rounded">$1</code>');
+    
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = '<p>' + html + '</p>';
+    
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/<p>\s*<h/g, '<h');
+    html = html.replace(/<\/h([1-6])>\s*<\/p>/g, '</h$1>');
+    html = html.replace(/<p>\s*<ul/g, '<ul');
+    html = html.replace(/<\/ul>\s*<\/p>/g, '</ul>');
+    
+    content.innerHTML = html;
+}
+
+// print stilleri
+const printStyles = `
+    @media print {
+        .btn, .navbar, .modal { display: none !important; }
+        .card { border: 1px solid #dee2e6 !important; }
+        .card-header { background-color: #f8f9fa !important; color: #000 !important; }
+        pre { font-size: 10px; }
+        .alert { border: 1px solid #dee2e6; }
+    }
+`;
+
+// print stili ekleme
+const style = document.createElement('style');
+style.textContent = printStyles;
+document.head.appendChild(style);
+</script>
+{% endblock %}

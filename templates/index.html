@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Code Analysis - AI-Powered Code Reviewer{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-robot text-primary me-3"></i>
+                AI-Powered Code Reviewer
+            </h1>
+            <p class="lead text-muted">
+                Upload your Python or JavaScript code for intelligent analysis and feedback
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-code me-2"></i>Code Analysis
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('analyze_code') }}" enctype="multipart/form-data" id="codeForm">
+                        <!-- Dil Seçimi -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="language" class="form-label fw-bold">
+                                    <i class="fas fa-language me-1"></i>Programming Language
+                                </label>
+                                <select class="form-select" id="language" name="language" required>
+                                    <option value="">Select Language</option>
+                                    <option value="python">Python</option>
+                                    <option value="javascript">JavaScript</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-upload me-1"></i>Input Method
+                                </label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="input_method" id="textarea_method" value="textarea" checked>
+                                    <label class="form-check-label" for="textarea_method">
+                                        Type/Paste Code
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="input_method" id="file_method" value="file">
+                                    <label class="form-check-label" for="file_method">
+                                        Upload File
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dosya Yükleme Kısmı -->
+                        <div id="file_upload_section" class="mb-4" style="display: none;">
+                            <label for="code_file" class="form-label fw-bold">
+                                <i class="fas fa-file-code me-1"></i>Upload Code File
+                            </label>
+                            <input type="file" class="form-control" id="code_file" name="code_file" accept=".py,.js,.mjs">
+                            <div class="form-text">
+                                Supported formats: .py (Python), .js/.mjs (JavaScript). Max size: 16MB
+                            </div>
+                        </div>
+
+                        <!-- Kod Yazma Alanı -->
+                        <div id="textarea_section" class="mb-4">
+                            <label for="code_content" class="form-label fw-bold">
+                                <i class="fas fa-code me-1"></i>Code Content
+                            </label>
+                            <textarea class="form-control font-monospace" id="code_content" name="code_content" rows="15" placeholder="Paste your code here..."></textarea>
+                        </div>
+
+                        <!-- Submit Butonu -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="analyzeBtn">
+                                <i class="fas fa-search me-2"></i>Analyze Code
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-lg px-4 ms-3" id="clearBtn">
+                                <i class="fas fa-trash me-2"></i>Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Özellikler Kısmı -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">What Does This Analyze?</h3>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-bug fa-3x text-danger mb-3"></i>
+                    <h5>Syntax Errors</h5>
+                    <p class="text-muted">Detect syntax issues and logical mistakes in your code</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-palette fa-3x text-info mb-3"></i>
+                    <h5>Code Style</h5>
+                    <p class="text-muted">Check adherence to coding standards and conventions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                    <h5>Best Practices</h5>
+                    <p class="text-muted">Get suggestions for improving code quality and performance</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-robot fa-3x text-success mb-3"></i>
+                    <h5>AI Insights</h5>
+                    <p class="text-muted">Intelligent feedback and explanations powered by AI</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Örnek Kod Kısmı -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-code me-2"></i>Try Sample Code
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-outline-primary w-100" onclick="loadSampleCode('python')">
+                                <i class="fab fa-python me-2"></i>Load Python Sample
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-outline-warning w-100" onclick="loadSampleCode('javascript')">
+                                <i class="fab fa-js-square me-2"></i>Load JavaScript Sample
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h6>Analyzing Code...</h6>
+                <p class="text-muted mb-0">This may take a few moments</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// örnek kodlar
+const sampleCode = {
+    python: `import os
+import sys
+
+# This function has several issues
+def calculate_average(numbers):
+    unused_var = "This variable is never used"
+    total = 0
+    count = 0
+    
+    for num in numbers:
+        total += num
+        count += 1
+    
+    # Potential division by zero
+    return total / count
+
+# Missing function documentation
+def process_data(data):
+    result = []
+    for item in data:
+        if item > 0:
+            result.append(item * 2)
+    return result
+
+# Main execution
+if __name__ == "__main__":
+    test_numbers = [1, 2, 3, 4, 5]
+    avg = calculate_average(test_numbers)
+    print(f"Average: {avg}")`,
+
+    javascript: `// JavaScript code with various issues
+var unusedVariable = "This variable is never used";
+let duplicateVar = 1;
+
+function calculateTotal(items) {
+    var sum = 0;  // Should use let/const
+    
+    for (var i = 0; i < items.length; i++) {
+        sum += items[i]  // Missing semicolon
+    }
+    
+    // Using == instead of ===
+    if (sum == 0) {
+        console.log("Total is zero");
+    }
+    
+    return sum;
+}
+
+// Function with unused parameter
+function processItem(item, unusedParam) {
+    return item * 2;
+}
+
+// Missing const for variable that never changes
+let PI_VALUE = 3.14159;
+
+// Inconsistent quotes
+let message1 = "Hello World";
+let message2 = 'Hello World';
+
+calculateTotal([1, 2, 3, 4, 5]);`
+};
+
+function loadSampleCode(language) {
+    document.getElementById('language').value = language;
+    document.getElementById('code_content').value = sampleCode[language];
+    document.getElementById('textarea_method').checked = true;
+    toggleInputMethod();
+    
+    document.getElementById('code_content').scrollIntoView({ behavior: 'smooth' });
+}
+
+// textarea ve dosya yükleme yöntemleri arasında geçiş (başlangıçta textarea gösterilecek)
+document.addEventListener('DOMContentLoaded', function() {
+    const textareaMethod = document.getElementById('textarea_method');
+    const fileMethod = document.getElementById('file_method');
+    
+    textareaMethod.addEventListener('change', toggleInputMethod);
+    fileMethod.addEventListener('change', toggleInputMethod);
+    
+    // form gönderme
+    document.getElementById('codeForm').addEventListener('submit', function(e) {
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+    });
+    
+    // temizleme butonu
+    document.getElementById('clearBtn').addEventListener('click', function() {
+        document.getElementById('code_content').value = '';
+        document.getElementById('code_file').value = '';
+        document.getElementById('language').value = '';
+    });
+});
+
+function toggleInputMethod() {
+    const textareaSection = document.getElementById('textarea_section');
+    const fileUploadSection = document.getElementById('file_upload_section');
+    const textareaMethod = document.getElementById('textarea_method');
+    
+    if (textareaMethod.checked) {
+        textareaSection.style.display = 'block';
+        fileUploadSection.style.display = 'none';
+        document.getElementById('code_file').removeAttribute('required');
+    } else {
+        textareaSection.style.display = 'none';
+        fileUploadSection.style.display = 'block';
+        document.getElementById('code_file').setAttribute('required', 'required');
+    }
+}
+</script>
+{% endblock %}
