@@ -17,9 +17,9 @@ def run_eslint(file_path):
         print(f"File does not exist: {file_path}")
         return []
     
-    # ESLint v9+ için basit bir yaklaşım - inline config kullanma
+    # ESLint v9+ için inline config kullanma
     try:
-        # ESLint v9+ ile çalışmak için ESLINT_USE_FLAT_CONFIG=false kullanılmalı
+        # ESLINT_USE_FLAT_CONFIG=false kullanılmalı
         env = os.environ.copy()
         env['ESLINT_USE_FLAT_CONFIG'] = 'false'
         

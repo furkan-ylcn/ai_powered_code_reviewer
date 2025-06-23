@@ -22,7 +22,6 @@ def run_pylint(file_path):
                 'pylint', 
                 file_path, 
                 '--output-format=json', 
-                '--disable=C0114,C0116,C0115',  # docstring hatalarının devre dışı bırakılması
                 '--score=no'  # skorlamanın devre dışı bırakılması
             ],
             stdout=subprocess.PIPE,
